@@ -2,7 +2,7 @@
 
 A patient-facing web page that explains a chest CT report in plain language for adults aged 60+. Paste the report and ScanGuide shows each finding as a picture card (lungs, heart, stomach) with a traffic-light label, a one-line explanation, and the recommended follow-up. It also lists questions to take to the doctor, with a reminder so the follow-up scan isn't missed.
 
-**Live demo:** [ScanGuide](https://claude.ai/artifact/Dgkg1Q13iTPuiDpaRLBjiG), or open `index.html` in any browser. It's a single file with no build step, and the report never leaves the device.
+**Live demo:** [warisham.github.io/Scanguide](https://warisham.github.io/Scanguide/), or open `index.html` in any browser. It's a single file with no build step, and the report never leaves the device.
 
 ![ScanGuide on desktop](screenshots/desktop.png)
 
