@@ -1,0 +1,896 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="ScanGuide explains your chest CT report in plain words, with pictures, and tells you what to ask your doctor.">
+<title>ScanGuide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700&family=Libre+Franklin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* ============================================================
+   ScanGuide — "Three simple steps" layout.
+   Written for readers 60+: nothing under 16px, body 19–20px,
+   one idea per card, pictures carrying the meaning first and
+   words second, and big targets (48px+) for every control.
+   ============================================================ */
+:root{
+  color-scheme: light;
+  --paper:#FBF6EE; --cream:#F6ECDD; --card:#FFFFFF; --card-2:#FAF6F0;
+  --ink:#14233A; --ink-soft:#44546A;
+  --rule:#E4DACB; --rule-strong:#C9BBA6;
+  --navy:#173A63; --navy-2:#0F2C4E; --navy-wash:#E7EEF6; --navy-line:#B4C7DC;
+  --steady:#1E6B43; --steady-wash:#E3F1E8;
+  --watch:#8A4E0E; --watch-wash:#FBEBD3; --watch-dot:#F2A93B;
+  --act:#A32A24; --act-wash:#F8E4E1;
+  --shadow:0 1px 2px rgba(20,35,58,.05), 0 12px 28px -22px rgba(20,35,58,.5);
+  --radius:16px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Libre Franklin",-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  font-size:19px; line-height:1.6; font-weight:450;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+}
+@media (min-width:700px){ body{font-size:20px} }
+img,svg{max-width:100%}
+h1,h2,h3{font-family:Bitter,Georgia,"Times New Roman",serif; margin:0; color:var(--ink); text-wrap:balance}
+h1{font-size:clamp(32px,5.4vw,50px); line-height:1.12; font-weight:700; letter-spacing:-.01em}
+h2{font-size:clamp(23px,3vw,28px); line-height:1.25; font-weight:700}
+h3{font-size:clamp(20px,2.2vw,22px); line-height:1.3; font-weight:700}
+p{margin:0}
+a{color:var(--navy); text-underline-offset:3px; text-decoration-thickness:2px}
+b,strong{font-weight:700}
+.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace}
+.wrap{max-width:1200px; margin:0 auto; padding-inline:16px}
+@media (min-width:700px){ .wrap{padding-inline:28px} }
+.hidden{display:none !important}
+.sr-only{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+
+:is(a,button,textarea,input,summary,label):focus-visible{outline:3px solid var(--navy); outline-offset:3px; border-radius:8px}
+
+/* ---- header ---- */
+header.site{display:flex; align-items:center; gap:14px; padding-block:18px; flex-wrap:wrap}
+.mark{display:flex; align-items:center; gap:10px; text-decoration:none}
+.mark svg{width:38px; height:38px; flex:0 0 auto}
+.mark .name{font-family:Bitter,Georgia,serif; font-size:30px; font-weight:700; color:var(--navy); letter-spacing:-.02em}
+#authArea{margin-left:auto; position:relative}
+
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:10px;
+  min-height:54px; padding:0 26px; border-radius:12px; cursor:pointer;
+  font:700 19px/1.2 "Libre Franklin",Arial,sans-serif; text-decoration:none;
+}
+.btn-primary{background:var(--navy); color:#fff; border:2px solid var(--navy)}
+.btn-primary:hover{background:var(--navy-2)}
+.btn-quiet{background:var(--card); color:var(--navy); border:2px solid var(--navy-line)}
+.btn-quiet:hover{border-color:var(--navy)}
+.btn-link{background:none; border:none; color:var(--navy); text-decoration:underline; text-underline-offset:3px;
+  font:600 18px/1.3 "Libre Franklin",Arial,sans-serif; cursor:pointer; min-height:48px; padding:0 6px}
+.btn:disabled{opacity:.7; cursor:default}
+
+/* Google sign-in — Google identity branding spec */
+.gsi{display:inline-flex; align-items:center; gap:11px; min-height:50px; padding:0 20px;
+  background:#FFFFFF; color:#1F1F1F; border:1px solid #747775; border-radius:25px;
+  font:600 17px/1 "Libre Franklin",Roboto,Arial,sans-serif; cursor:pointer; white-space:nowrap}
+.gsi:hover{background:#F2F3F4}
+.gsi svg{width:20px; height:20px; flex:0 0 auto}
+.account{display:inline-flex; align-items:center; gap:10px; min-height:50px; padding:0 16px 0 8px;
+  background:var(--card); border:2px solid var(--rule-strong); border-radius:25px;
+  font:600 17px/1 inherit; font-family:inherit; color:var(--ink); cursor:pointer}
+.avatar{width:36px; height:36px; border-radius:50%; background:var(--navy); color:#fff;
+  display:grid; place-items:center; font-size:17px; font-weight:700}
+.menu{position:absolute; right:0; top:60px; z-index:20; min-width:min(290px,86vw);
+  background:var(--card); border:2px solid var(--rule-strong); border-radius:14px;
+  box-shadow:var(--shadow); padding:8px; display:flex; flex-direction:column; gap:2px}
+.menu .who{padding:12px 13px 14px; border-bottom:1px solid var(--rule); margin-bottom:6px; font-weight:600}
+.menu .who .em{font-size:16px; color:var(--ink-soft); font-weight:400}
+.menu button{font:inherit; font-size:18px; background:none; border:none; text-align:left;
+  padding:12px 13px; border-radius:8px; cursor:pointer; color:var(--ink); min-height:48px}
+.menu button:hover{background:var(--card-2)}
+
+/* ---- reassurance bar ---- */
+.assure{display:flex; align-items:center; justify-content:center; gap:12px;
+  background:var(--navy-wash); border:2px solid var(--navy-line); border-radius:12px;
+  padding:12px 18px; font-size:18px; font-weight:600; color:var(--ink); text-align:left}
+.assure svg{width:30px; height:30px; flex:0 0 auto}
+
+/* ---- hero ---- */
+.hero{display:grid; grid-template-columns:1.15fr .85fr; align-items:center; gap:28px;
+  margin-top:20px; background:var(--cream); border-radius:var(--radius); padding:36px 36px 0; overflow:hidden}
+.hero .copy{padding-bottom:36px}
+.hero .lede{margin-top:16px; font-size:clamp(19px,2vw,22px); color:var(--ink-soft); max-width:34ch}
+.hero .cta{margin-top:24px; display:flex; flex-wrap:wrap; gap:12px}
+.hero figure{margin:0; align-self:end}
+.hero figure svg{display:block; width:100%; height:auto}
+
+/* ---- three steps ---- */
+.steps{list-style:none; margin:22px 0 0; padding:0; display:grid; grid-template-columns:repeat(3,1fr); gap:18px}
+.steps li{display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:14px;
+  background:var(--card); border:2px solid var(--rule); border-radius:var(--radius); padding:18px 18px}
+.steps .n{font-family:Bitter,Georgia,serif; font-size:46px; font-weight:700; color:var(--navy); line-height:1}
+.steps h3{font-size:clamp(19px,1.8vw,21px)}
+.steps svg{width:84px; height:84px}
+
+/* ---- main two-column area ---- */
+.main{display:grid; grid-template-columns:.95fr 1.25fr; gap:22px; margin-top:22px; align-items:start}
+.col{display:flex; flex-direction:column; gap:22px; min-width:0}
+#results{display:flex; flex-direction:column; gap:22px}
+#results:empty{display:none}
+.card{background:var(--card); border:2px solid var(--rule); border-radius:var(--radius); padding:24px; box-shadow:var(--shadow)}
+
+.composer label{display:block; font-family:Bitter,Georgia,serif; font-size:clamp(21px,2.4vw,24px); font-weight:700}
+.composer .help{margin-top:6px; font-size:17px; color:var(--ink-soft)}
+.composer textarea{display:block; width:100%; min-height:190px; margin-top:14px; padding:14px 16px;
+  border:2px solid var(--rule-strong); border-radius:12px; background:var(--card-2); color:var(--ink);
+  font:16px/1.55 "IBM Plex Mono",ui-monospace,Menlo,monospace; resize:vertical}
+.composer .controls{display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; margin-top:16px}
+.composer .controls .btn-primary{flex:1 1 220px}
+.privacy{display:flex; gap:10px; align-items:flex-start; margin-top:14px; font-size:16px; color:var(--ink-soft)}
+.privacy svg{width:22px; height:22px; flex:0 0 auto; margin-top:2px}
+
+.asks-card{display:grid; grid-template-columns:1fr auto; gap:6px 16px; background:var(--navy-wash); border-color:var(--navy-line)}
+.asks-card h2{grid-column:1 / -1}
+.asks-card svg.doc-ill{width:120px; height:auto; align-self:end}
+.asks{list-style:none; margin:10px 0 0; padding:0; display:flex; flex-direction:column; gap:4px}
+.asks label{display:flex; gap:12px; align-items:flex-start; padding:8px 0; cursor:pointer; font-size:18px; line-height:1.45}
+.asks input{width:26px; height:26px; margin:1px 0 0; flex:0 0 auto; accent-color:var(--navy)}
+.asks input:checked + span{color:var(--ink-soft); text-decoration:line-through}
+.asks-note{grid-column:1 / -1; font-size:16px; color:var(--ink-soft)}
+
+/* ---- results ---- */
+.result-head{display:flex; align-items:center; gap:12px; flex-wrap:wrap}
+.example-tag{font-size:16px; font-weight:600; padding:4px 12px; border-radius:999px;
+  background:var(--card); border:2px solid var(--rule-strong); color:var(--ink-soft)}
+.tally{display:flex; flex-wrap:wrap; gap:10px 22px; margin-top:12px}
+.tally span{display:inline-flex; align-items:center; gap:9px; font-family:Bitter,Georgia,serif; font-size:clamp(20px,2.2vw,23px); font-weight:700}
+.tally i{width:18px; height:18px; border-radius:50%; display:inline-block}
+.tally .t-watch i{background:var(--watch-dot)} .tally .t-act i{background:var(--act)} .tally .t-ok i{background:#5DB37E}
+.verdict{margin-top:10px; font-size:18px; color:var(--ink-soft); max-width:60ch}
+
+.findings{display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:16px; margin-top:16px}
+.finding{display:flex; flex-direction:column; align-items:center; text-align:center; gap:10px;
+  background:var(--card); border:2px solid var(--rule); border-top-width:8px; border-radius:var(--radius); padding:18px 16px 16px}
+.finding.s-routine{border-top-color:#5DB37E} .finding.s-notable{border-top-color:var(--watch-dot)} .finding.s-urgent{border-top-color:var(--act)}
+.finding svg.organ{width:96px; height:96px}
+.badge{display:inline-block; font-size:16px; font-weight:700; padding:5px 14px; border-radius:999px; line-height:1.3}
+.b-routine{background:var(--steady-wash); color:var(--steady)}
+.b-notable{background:var(--watch-wash); color:var(--watch)}
+.b-urgent{background:var(--act-wash); color:var(--act)}
+.finding .short{font-size:18px; line-height:1.5}
+.finding details{width:100%; text-align:left; margin-top:auto; border-top:1px solid var(--rule); padding-top:6px}
+.finding summary{cursor:pointer; font-weight:700; color:var(--navy); font-size:17px; min-height:44px; display:flex; align-items:center; gap:8px; list-style:none}
+.finding summary::-webkit-details-marker{display:none}
+.finding summary::before{content:"+"; display:inline-grid; place-items:center; width:26px; height:26px; border-radius:50%; border:2px solid var(--navy-line); font-size:18px; line-height:1}
+.finding details[open] summary::before{content:"−"}
+.finding details p{font-size:17px; margin-top:10px}
+.facts{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px}
+.facts span{font-size:16px; padding:3px 10px; border-radius:8px; background:var(--card-2); border:1px solid var(--rule)}
+.quote{font-size:16px !important; background:var(--card-2); border-left:4px solid var(--rule-strong); padding:8px 12px; border-radius:6px; overflow-wrap:anywhere}
+.quote::before{content:"From your report: "; font-family:"Libre Franklin",Arial,sans-serif; font-weight:700; display:block; font-size:16px}
+
+.remind{display:grid; grid-template-columns:auto minmax(0,1fr); gap:6px 20px; align-items:center; background:var(--cream); border-color:var(--rule)}
+.remind svg.cal{width:96px; height:96px; grid-row:span 2}
+.remind .form{grid-column:1 / -1; display:flex; flex-wrap:wrap; gap:10px; margin-top:8px}
+.remind input{flex:1 1 220px; min-width:0; width:100%; min-height:54px; padding:0 16px; border:2px solid var(--rule-strong); border-radius:12px; font:inherit; font-size:18px; background:#fff; color:var(--ink)}
+.confirm{grid-column:1 / -1; color:var(--steady); font-weight:700; font-size:18px}
+.signin-prompt{grid-column:1 / -1; display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px; font-size:17px; color:var(--ink-soft); border-top:1px solid var(--rule); padding-top:14px; margin-top:6px}
+.signin-prompt p{flex:1 1 240px}
+.remind > *{min-width:0}
+.note{grid-column:1 / -1; font-size:17px; color:var(--ink-soft)}
+
+.offer{background:var(--navy-wash); border-color:var(--navy-line)}
+.offer p{margin-top:8px; font-size:18px}
+.offer .price{font-weight:700; font-size:20px}
+.offer .btn{margin-top:14px}
+
+.saved-list{list-style:none; padding:0; margin:12px 0 0}
+.saved-list li{display:flex; justify-content:space-between; gap:12px; padding:10px 0; border-top:1px solid var(--rule)}
+.saved-list .when{color:var(--ink-soft); font-size:17px}
+
+/* ---- footer ---- */
+footer.legal{margin-top:30px; background:var(--navy); color:#fff}
+footer.legal .bar{display:flex; align-items:center; justify-content:center; gap:12px; padding:16px; font-size:18px; font-weight:600; text-align:left}
+footer.legal .bar svg{width:30px; height:30px; flex:0 0 auto}
+footer.legal .more{background:var(--paper); color:var(--ink-soft); font-size:16px}
+footer.legal .more .wrap{display:grid; gap:10px; padding-block:18px 28px}
+
+/* ---- responsive ---- */
+@media (max-width:980px){
+  .main{display:flex; flex-direction:column}
+  .col{display:contents}
+  .composer{order:1} #results{order:2} .asks-card{order:3}
+  .steps li{grid-template-columns:auto 1fr; }
+  .steps svg{grid-column:1 / -1; justify-self:center}
+}
+@media (max-width:760px){
+  .hero{grid-template-columns:1fr; padding:26px 20px 0; gap:6px}
+  .hero .copy{padding-bottom:6px}
+  .hero figure{max-width:360px; justify-self:center; width:100%}
+  .steps{grid-template-columns:1fr}
+  .steps li{grid-template-columns:auto 1fr auto}
+  .steps svg{grid-column:auto; width:72px; height:72px}
+  .card{padding:20px 18px}
+  .asks-card{grid-template-columns:1fr}
+  .asks-card svg.doc-ill{display:none}
+}
+@media (max-width:420px){
+  .mark .name{font-size:26px}
+  .assure{font-size:17px}
+  .remind{grid-template-columns:minmax(0,1fr)}
+  .signin-prompt .gsi{white-space:normal; text-align:left; line-height:1.25; padding-block:8px}
+  .remind svg.cal{grid-row:auto; width:72px; height:72px}
+  .gsi{padding:0 14px}
+  .hero .cta .btn{flex:1 1 100%}
+}
+@media (prefers-reduced-motion:reduce){ *{transition:none !important; animation:none !important; scroll-behavior:auto !important} }
+</style>
+</head>
+<body>
+
+<!-- Reusable pictures. Drawn as SVG so they stay sharp at any screen size and work offline. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-lungs" viewBox="0 0 96 96">
+      <circle cx="48" cy="48" r="46" fill="#FDEDEA"/>
+      <path d="M48 14v30" stroke="#C9675E" stroke-width="5" stroke-linecap="round"/>
+      <path d="M48 42c-3 3-7 4-10 6M48 42c3 3 7 4 10 6" stroke="#C9675E" stroke-width="4" stroke-linecap="round" fill="none"/>
+      <path d="M38 30c-12 2-20 18-20 34 0 8 5 11 11 9l12-4c3-1 4-3 4-6V38c0-5-3-9-7-8z" fill="#F28C84"/>
+      <path d="M58 30c12 2 20 18 20 34 0 8-5 11-11 9l-12-4c-3-1-4-3-4-6V38c0-5 3-9 7-8z" fill="#F28C84"/>
+      <path d="M30 52c3-2 6-3 9-2M28 62c4-2 8-2 11 0M66 52c-3-2-6-3-9-2M68 62c-4-2-8-2-11 0" stroke="#D9675F" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <symbol id="i-heart" viewBox="0 0 96 96">
+      <circle cx="48" cy="48" r="46" fill="#FDEDEA"/>
+      <path d="M40 16v12M52 14v14M60 18v10" stroke="#B9483F" stroke-width="5" stroke-linecap="round"/>
+      <path d="M48 80C30 68 20 56 20 43c0-9 7-16 15-16 6 0 10 3 13 7 3-4 7-7 13-7 8 0 15 7 15 16 0 13-10 25-28 37z" fill="#E2574C"/>
+      <path d="M34 40c4 4 6 10 5 17M58 34c-2 8 0 16 6 22" stroke="#B9483F" stroke-width="3" stroke-linecap="round" fill="none"/>
+      <circle cx="40" cy="52" r="3" fill="#F7D27A"/><circle cx="60" cy="47" r="3" fill="#F7D27A"/>
+    </symbol>
+    <symbol id="i-stomach" viewBox="0 0 96 96">
+      <circle cx="48" cy="48" r="46" fill="#FDEDEA"/>
+      <path d="M42 12v14" stroke="#C9675E" stroke-width="6" stroke-linecap="round"/>
+      <path d="M42 24c0 8 4 12 12 12 10 0 18 6 18 18 0 14-12 24-28 24-9 0-15-4-18-9-2-4 2-7 6-5 4 2 7 3 11 3 7 0 11-4 11-9 0-4-3-6-7-6-8 0-13-6-13-14v-4" fill="#F28C84"/>
+      <path d="M50 46c6 0 10 3 11 9" stroke="#D9675F" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+    </symbol>
+    <symbol id="i-body" viewBox="0 0 96 96">
+      <circle cx="48" cy="48" r="46" fill="#E7EEF6"/>
+      <circle cx="48" cy="30" r="11" fill="#173A63"/>
+      <path d="M26 78c0-15 10-26 22-26s22 11 22 26z" fill="#173A63"/>
+      <circle cx="48" cy="62" r="6" fill="#F2A93B"/>
+    </symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24">
+      <path d="M12 2.5 20 5.5v6c0 5-3.4 8.8-8 10.1-4.6-1.3-8-5.1-8-10.1v-6l8-3Z" fill="currentColor"/>
+      <path d="m8.4 12 2.5 2.5 4.7-4.9" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </symbol>
+    <symbol id="i-doctor" viewBox="0 0 140 150">
+      <circle cx="70" cy="74" r="66" fill="#fff" opacity=".7"/>
+      <path d="M22 150c0-30 21-50 48-50s48 20 48 50z" fill="#fff" stroke="#B4C7DC" stroke-width="2"/>
+      <path d="M58 100l12 22 12-22" fill="#5B86B8"/>
+      <path d="M52 104c-6 12-6 24 4 28 8 3 14-3 12-10" stroke="#14233A" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <circle cx="68" cy="122" r="4" fill="#14233A"/>
+      <rect x="62" y="84" width="16" height="18" rx="6" fill="#D9A07A"/>
+      <ellipse cx="70" cy="62" rx="22" ry="25" fill="#E8B48E"/>
+      <path d="M47 58c0-18 10-26 23-26s23 8 23 26c-4-8-11-12-18-12-9 0-20 3-28 12z" fill="#7C8A99"/>
+      <circle cx="61" cy="64" r="6.5" fill="none" stroke="#14233A" stroke-width="2.5"/>
+      <circle cx="79" cy="64" r="6.5" fill="none" stroke="#14233A" stroke-width="2.5"/>
+      <path d="M67.5 64h5" stroke="#14233A" stroke-width="2.5"/>
+      <path d="M63 76c4 4 10 4 14 0" stroke="#14233A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <rect x="86" y="108" width="26" height="34" rx="3" fill="#F6ECDD" stroke="#8A6D4B" stroke-width="2"/>
+      <path d="M92 118h14M92 125h14M92 132h9" stroke="#8A6D4B" stroke-width="2.5" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header class="site">
+    <a class="mark" href="#top" id="top" aria-label="ScanGuide home">
+      <svg viewBox="0 0 32 32" aria-hidden="true">
+        <circle cx="16" cy="16" r="13" fill="none" stroke="#173A63" stroke-width="2.4" opacity=".4"/>
+        <circle cx="16" cy="16" r="7.5" fill="none" stroke="#173A63" stroke-width="2.4" opacity=".7"/>
+        <circle cx="16" cy="16" r="3.2" fill="#173A63"/>
+        <path d="M16 1.6v4.4M16 26v4.4M1.6 16h4.4M26 16h4.4" stroke="#173A63" stroke-width="2.4" stroke-linecap="round"/>
+      </svg>
+      <span class="name">ScanGuide</span>
+    </a>
+    <div id="authArea"></div>
+  </header>
+
+  <main id="main">
+  <p class="assure">
+    <svg aria-hidden="true" style="color:#173A63"><use href="#i-shield"/></svg>
+    <span>ScanGuide does not diagnose you. It explains what your report already says.</span>
+  </p>
+
+  <section class="hero" aria-labelledby="hero-h">
+    <div class="copy">
+      <h1 id="hero-h">You got your scan results. Let&rsquo;s read them together.</h1>
+      <p class="lede">Clear explanations for the words in your chest CT report, with what to do next.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="#report">Start with my report</a>
+      </div>
+    </div>
+    <figure aria-hidden="true">
+      <svg viewBox="0 0 400 300">
+        <rect x="236" y="22" width="132" height="120" rx="8" fill="#FFFDF8" stroke="#E2CDB0" stroke-width="4"/>
+        <path d="M302 22v120M236 82h132" stroke="#E2CDB0" stroke-width="4"/>
+        <path d="M250 128c10-30 30-46 52-50M300 128c8-18 20-30 50-36" stroke="#CFE3C9" stroke-width="10" stroke-linecap="round" fill="none"/>
+        <rect x="40" y="244" width="360" height="56" fill="#C99B70"/>
+        <rect x="40" y="244" width="360" height="10" fill="#B3865C"/>
+        <path d="M76 300c0-62 34-104 86-104s86 42 86 104z" fill="#5E86B3"/>
+        <path d="M140 200l22 30 22-30" fill="#E9EEF5"/>
+        <rect x="148" y="166" width="28" height="34" rx="10" fill="#D9A07A"/>
+        <ellipse cx="162" cy="136" rx="40" ry="45" fill="#E8B48E"/>
+        <ellipse cx="121" cy="142" rx="8" ry="12" fill="#D9A07A"/>
+        <path d="M120 128c-2-36 18-52 42-52 26 0 44 16 42 46-6-14-18-22-30-22-14 0-34 4-46 26z" fill="#D7D9DD"/>
+        <path d="M128 114c-6 6-8 16-7 26M198 112c5 6 6 14 5 22" stroke="#C3C6CC" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="146" cy="140" r="12" fill="#fff" fill-opacity=".35" stroke="#14233A" stroke-width="4"/>
+        <circle cx="180" cy="140" r="12" fill="#fff" fill-opacity=".35" stroke="#14233A" stroke-width="4"/>
+        <path d="M158 140h10" stroke="#14233A" stroke-width="4"/>
+        <circle cx="146" cy="142" r="2.6" fill="#14233A"/><circle cx="180" cy="142" r="2.6" fill="#14233A"/>
+        <path d="M150 162c8 5 18 5 26 0" stroke="#14233A" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <path d="M150 170c6 4 20 4 26 0" stroke="#C3C6CC" stroke-width="6" stroke-linecap="round" fill="none"/>
+        <g transform="rotate(-8 214 226)">
+          <rect x="176" y="186" width="84" height="104" rx="4" fill="#FFFFFF" stroke="#C9BBA6" stroke-width="3"/>
+          <path d="M190 206h56M190 220h56M190 234h40M190 248h56M190 262h30" stroke="#B4C7DC" stroke-width="5" stroke-linecap="round"/>
+        </g>
+        <ellipse cx="184" cy="252" rx="14" ry="11" fill="#E8B48E"/>
+        <ellipse cx="258" cy="244" rx="14" ry="11" fill="#E8B48E"/>
+        <path d="M300 214h34v30c0 9-7 14-17 14s-17-5-17-14z" fill="#F7F1E6" stroke="#C9BBA6" stroke-width="3"/>
+        <path d="M334 222c10 0 12 14 0 16" stroke="#C9BBA6" stroke-width="4" fill="none"/>
+        <path d="M54 244l6-40h40l6 40z" fill="#B9653F"/>
+        <path d="M80 204c-10-20-24-26-34-24 4 14 16 22 34 24zM80 204c6-24 20-32 32-30-4 16-16 26-32 30zM80 204c-2-26 6-40 14-44 4 18-2 34-14 44z" fill="#4F9A67"/>
+      </svg>
+    </figure>
+  </section>
+
+  <h2 class="sr-only">How ScanGuide works</h2>
+  <ol class="steps">
+    <li>
+      <span class="n" aria-hidden="true">1</span>
+      <h3>Paste your report</h3>
+      <svg viewBox="0 0 84 84" aria-hidden="true">
+        <path d="M18 8h34l16 16v52H18z" fill="#fff" stroke="#8C9BAD" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M52 8v16h16" fill="#E7EEF6" stroke="#8C9BAD" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M27 36h30M27 46h30M27 56h22M27 66h26" stroke="#B4C7DC" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+    </li>
+    <li>
+      <span class="n" aria-hidden="true">2</span>
+      <h3>We explain each finding in everyday words</h3>
+      <svg viewBox="0 0 84 84" aria-hidden="true">
+        <path d="M6 16c0-5 4-9 9-9h36c5 0 9 4 9 9v20c0 5-4 9-9 9H26l-12 10v-10c-5 0-8-4-8-9z" fill="#E7EEF6" stroke="#5B86B8" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M16 20h32M16 30h24" stroke="#5B86B8" stroke-width="4" stroke-linecap="round"/>
+        <path d="M34 50c0-5 4-8 8-8h28c5 0 8 3 8 8v14c0 5-3 8-8 8h-2v9l-11-9H42c-4 0-8-3-8-8z" fill="#FBEBD3" stroke="#D08A2C" stroke-width="3" stroke-linejoin="round"/>
+        <circle cx="46" cy="57" r="3" fill="#D08A2C"/><circle cx="56" cy="57" r="3" fill="#D08A2C"/><circle cx="66" cy="57" r="3" fill="#D08A2C"/>
+      </svg>
+    </li>
+    <li>
+      <span class="n" aria-hidden="true">3</span>
+      <h3>You get next steps and questions for your doctor</h3>
+      <svg viewBox="0 0 84 84" aria-hidden="true">
+        <rect x="14" y="10" width="52" height="68" rx="6" fill="#fff" stroke="#8C9BAD" stroke-width="3"/>
+        <rect x="30" y="5" width="20" height="10" rx="3" fill="#B4C7DC"/>
+        <path d="M22 30l4 4 7-8M22 48l4 4 7-8M22 66l4 4 7-8" stroke="#1E6B43" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M40 31h18M40 49h18M40 67h14" stroke="#B4C7DC" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+    </li>
+  </ol>
+
+  <div class="main">
+    <div class="col">
+      <section class="card composer" aria-labelledby="report-label">
+        <label id="report-label" for="report">Paste your chest CT report here</label>
+        <p class="help" id="report-help">Copy the &ldquo;Findings&rdquo; and &ldquo;Impression&rdquo; parts of your report into the box.</p>
+        <textarea id="report" spellcheck="false" aria-describedby="report-help privacy-note"></textarea>
+        <div class="controls">
+          <button class="btn btn-primary" id="explain" type="button">Explain my report</button>
+          <button class="btn-link" id="loadSample" type="button">Try a sample report</button>
+          <button class="btn-link" id="clear" type="button">Clear the box</button>
+        </div>
+        <p class="privacy" id="privacy-note">
+          <svg aria-hidden="true" style="color:#1E6B43"><use href="#i-shield"/></svg>
+          <span>Your report stays on this device. Nothing is uploaded.</span>
+        </p>
+      </section>
+      <section class="card asks-card" id="asks" aria-labelledby="asks-h"></section>
+    </div>
+    <div class="col">
+      <section id="results" aria-live="polite" aria-label="Your report, explained"></section>
+    </div>
+  </div>
+  </main>
+</div>
+
+<footer class="legal">
+  <p class="bar">
+    <svg aria-hidden="true" style="color:#fff"><use href="#i-shield"/></svg>
+    <span>This is not a diagnosis. If you have chest pain or severe shortness of breath, seek care now.</span>
+  </p>
+  <div class="more"><div class="wrap">
+    <p><b>Where the recommendations come from.</b> Fleischner Society 2017 guidance for incidental pulmonary nodules, ACR Lung-RADS v2022 for screening scans, and SCCT/STR guidance on coronary calcium reported on non-gated chest CT.</p>
+    <p><b>Prototype.</b> Explanations run on this device for demonstration. Sign-in, reminders, the second-read service and payments are not live. A production version would run on HIPAA-ready infrastructure under a signed BAA.</p>
+  </div></div>
+</footer>
+
+<script>
+"use strict";
+const SAMPLE = `CT CHEST WITHOUT CONTRAST
+CLINICAL HISTORY: Persistent cough. Former smoker.
+
+FINDINGS:
+Lungs: A 7 mm solid noncalcified nodule is present in the right upper lobe. No additional suspicious pulmonary nodules. No pleural effusion. Mild centrilobular emphysema in the upper lobes.
+Mediastinum: No lymphadenopathy.
+Heart and vessels: Moderate coronary artery calcification is noted. No pericardial effusion.
+Upper abdomen: Small hiatal hernia.
+
+IMPRESSION:
+1. 7 mm solid right upper lobe pulmonary nodule. Follow-up chest CT recommended per Fleischner Society criteria.
+2. Moderate coronary artery calcification.
+3. Mild emphysema.`;
+
+const el = (id) => document.getElementById(id);
+const esc = (s) => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const RANK = { routine:0, notable:1, urgent:2 };
+
+function sentences(text){
+  return text.split(/(?<=[.;:])\s+|\n+/).map(s => s.trim()).filter(Boolean);
+}
+function mm(value, unit){
+  const n = parseFloat(value);
+  return unit.toLowerCase().startsWith("c") ? n * 10 : n;
+}
+function sizesIn(s){
+  const out = [];
+  const re = /(\d+(?:\.\d+)?)\s*(?:x\s*\d+(?:\.\d+)?\s*)?(mm|cm)\b/gi;
+  let m;
+  while ((m = re.exec(s)) !== null) out.push(mm(m[1], m[2]));
+  return out;
+}
+function findLocation(s){
+  const m = s.match(/\b(right|left)\s+(upper|middle|lower)\s+lobe\b/i);
+  if (m) return m[0].toLowerCase();
+  if (/\blingula\b/i.test(s)) return "lingula";
+  return null;
+}
+
+/* ---------- the rules engine ---------- */
+function analyze(raw){
+  const text = raw.replace(/\s+/g, " ");
+  const low = text.toLowerCase();
+  const sents = sentences(raw);
+  const findings = [];
+  let secondRead = false;
+
+  // Screening context
+  const lungRads = low.match(/lung-?\s?rads\s*(?:category\s*)?([0-4])\s*([abcxs]?)/i);
+
+  /* --- pulmonary nodule --- */
+  const nodSents = sents.filter(s => /nodule|mass|opacity/i.test(s) && !/^no\b/i.test(s.trim()));
+  const negated = /\bno (?:suspicious |pulmonary |new )?(?:nodules?|masses?)\b/i.test(low);
+  let biggest = null;
+  nodSents.forEach(s => {
+    if (/\bno\s+(?:additional\s+)?(?:suspicious\s+)?(?:pulmonary\s+)?nodules?/i.test(s)) return;
+    const sz = sizesIn(s);
+    if (!sz.length) return;
+    const max = Math.max(...sz);
+    if (!biggest || max > biggest.size) biggest = { size:max, sentence:s.trim() };
+  });
+
+  if (biggest){
+    const s = biggest.sentence.toLowerCase();
+    const isMass = /\bmass\b/.test(s) || biggest.size >= 30;
+    const groundGlass = /ground[- ]glass|\bggo\b|ground glass/.test(s);
+    const partSolid = /part[- ]solid|subsolid|sub-solid/.test(s);
+    const calcified = /\bcalcified\b/.test(s) && !/noncalcified|non-calcified/.test(s);
+    const worrying = /spiculat|irregular margin|suspicious|cavitat|lobulated/.test(s);
+    const stable = /stable|unchanged|no interval (change|growth)/.test(s) ||
+                   /stable|unchanged|no interval (change|growth)/.test(low);
+    const type = groundGlass ? "ground-glass" : partSolid ? "part-solid" : "solid";
+    const loc = findLocation(biggest.sentence);
+    const size = biggest.size;
+
+    let sev = "routine", headline = "", guide = "";
+
+    if (calcified){
+      sev = "routine";
+      headline = "A calcified nodule is almost always an old, healed spot — scar tissue from a past infection, not cancer.";
+      guide = "Calcified nodules with a benign pattern generally need no follow-up imaging.";
+    } else if (isMass || worrying){
+      sev = "urgent"; secondRead = true;
+      headline = `Your report describes ${isMass ? "a mass" : "a nodule with features"} that radiologists treat as needing prompt work-up. That is not the same as a cancer diagnosis, but it does mean this should not wait.`;
+      guide = "Findings like this usually lead to a PET-CT, a tissue sample, or a specialist referral rather than watchful waiting. Call the doctor who ordered the scan this week.";
+    } else if (type === "solid"){
+      if (size < 6){
+        sev = "routine";
+        headline = `A ${size} mm solid nodule is small. Most nodules this size are benign, and for many people no repeat scan is required at all.`;
+        guide = "Fleischner 2017: for a single solid nodule under 6 mm, no routine follow-up in low-risk patients; an optional CT at 12 months if you are high-risk (heavy smoking history, family history).";
+      } else if (size <= 8){
+        sev = "notable"; secondRead = true;
+        headline = `A ${size} mm solid nodule sits in the range where doctors watch rather than act. Most nodules this size turn out to be benign; the repeat scan exists to confirm it is not growing.`;
+        guide = "Fleischner 2017: for a single solid nodule 6–8 mm, a repeat CT at 6–12 months, then consider 18–24 months. Make sure that follow-up is actually scheduled — this is the step most often missed.";
+      } else {
+        sev = "notable"; secondRead = true;
+        headline = `A ${size} mm solid nodule is large enough that your team will want a closer look sooner rather than later. That is standard caution, not a verdict.`;
+        guide = "Fleischner 2017: for a solid nodule larger than 8 mm, consider a CT at 3 months, a PET-CT, or a tissue sample depending on your risk. Ask which of those applies to you and when.";
+      }
+    } else if (type === "ground-glass"){
+      sev = size < 6 ? "routine" : "notable";
+      if (size >= 6) secondRead = true;
+      headline = `A ground-glass nodule is hazier than a solid one. These grow very slowly when they grow at all, which is why follow-up is measured in years, not weeks.`;
+      guide = size < 6
+        ? "Fleischner 2017: for a ground-glass nodule under 6 mm, no routine follow-up is recommended."
+        : "Fleischner 2017: for a ground-glass nodule 6 mm or larger, a CT at 6–12 months, then every two years out to five years.";
+    } else {
+      sev = "notable"; secondRead = true;
+      headline = `A part-solid nodule has both hazy and solid parts. The size of the solid part is what drives the plan, so it is worth asking your doctor specifically about that number.`;
+      guide = "Fleischner 2017: for a part-solid nodule 6 mm or larger, a CT at 3–6 months; persistent nodules with a solid part of 6 mm or more are handled more aggressively.";
+    }
+
+    findings.push({
+      severity: sev,
+      title: type === "solid" ? "Lung nodule" : `Lung nodule (${type})`,
+      facts: [
+        ["Size", `${size} mm`],
+        ["Type", type],
+        loc ? ["Location", loc] : null,
+        stable ? ["Compared to prior", "described as stable"] : null
+      ].filter(Boolean),
+      body: headline,
+      quote: biggest.sentence,
+      guide,
+      secondRead: sev !== "routine"
+    });
+  } else if (negated){
+    findings.push({
+      severity: "routine",
+      title: "No lung nodules",
+      facts: [],
+      body: "Your report states there are no suspicious lung nodules. That is the sentence most people are looking for.",
+      quote: null,
+      guide: "",
+      secondRead: false
+    });
+  }
+
+  if (lungRads){
+    const cat = lungRads[1] + (lungRads[2] || "");
+    const n = parseInt(lungRads[1], 10);
+    const sev = n >= 4 ? "urgent" : n === 3 ? "notable" : "routine";
+    const text = {
+      0:"Category 0 means the scan was incomplete or a prior study is needed for comparison — not that something was found.",
+      1:"Category 1 means nothing concerning was seen. Screening continues in 12 months.",
+      2:"Category 2 means benign findings only. Screening continues in 12 months.",
+      3:"Category 3 means probably benign, with roughly a 1–2% chance of cancer. The recommended step is a repeat CT in 6 months.",
+      4:"Category 4 means suspicious. The recommended step is a shorter-interval CT, a PET-CT, or a tissue sample, depending on the sub-category."
+    }[n];
+    findings.push({
+      severity: sev,
+      title: `Lung-RADS ${cat.toUpperCase()}`,
+      facts: [["Category", cat.toUpperCase()]],
+      body: text,
+      quote: null,
+      guide: "ACR Lung-RADS v2022 is the scoring system used for lung cancer screening CTs. Your category determines the recommended next step.",
+      secondRead: n >= 3
+    });
+  }
+
+  /* --- coronary calcium: the second insight --- */
+  const cacSent = sents.find(s => /calcifi/i.test(s) && /coronary|cardiac|lad|left anterior descending/i.test(s));
+  const agatston = low.match(/(?:agatston|calcium score)[^\d]{0,12}(\d{1,4})/);
+  if (cacSent || agatston){
+    const s = (cacSent || "").toLowerCase();
+    let level = "present", sev = "notable";
+    if (/severe|extensive|heavy|dense/.test(s)) level = "severe";
+    else if (/moderate/.test(s)) level = "moderate";
+    else if (/mild|minimal|scattered|trace|small amount|punctate/.test(s)) { level = "mild"; sev = "notable"; }
+    if (agatston){
+      const score = parseInt(agatston[1], 10);
+      level = score >= 400 ? "severe" : score >= 100 ? "moderate" : score > 0 ? "mild" : "none";
+    }
+    findings.push({
+      severity: sev,
+      title: "Coronary artery calcium",
+      facts: [
+        ["Amount", level],
+        agatston ? ["Agatston score", agatston[1]] : null
+      ].filter(Boolean),
+      body: "Your scan also picked up calcium in the arteries of your heart. This is the finding almost nobody gets told about: it is visible on most chest CTs but carried into the final impression only a small fraction of the time. It means plaque has built up in your coronary arteries — a measurable, treatable risk for heart attack, not an emergency today.",
+      quote: cacSent ? cacSent.trim() : null,
+      guide: `Moderate or severe coronary calcium often meets the threshold where guidelines favor starting a statin. Bring this line to your primary care doctor and ask: "Given this calcium on my chest CT, should we recalculate my heart risk and discuss a statin?"`,
+      secondRead: false
+    });
+  }
+
+  /* --- other incidentals worth naming --- */
+  const others = [
+    [/emphysema/i, "Emphysema", "Emphysema means some lung tissue has lost its elasticity, usually from smoking. It is not cancer. It is worth a breathing test and, if you still smoke, this is the finding that makes quitting pay off most."],
+    [/pleural effusion/i, "Pleural effusion", "Fluid has collected between the lung and the chest wall. Small amounts are common and often resolve; your doctor will decide whether the cause needs chasing."],
+    [/lymphadenopathy|enlarged.{0,20}lymph node/i, "Enlarged lymph nodes", "Lymph nodes enlarge for many reasons, infection being the most common. In combination with a nodule, this is one your doctor should interpret rather than you."],
+    [/hiatal hernia/i, "Hiatal hernia", "Part of the stomach sits slightly above the diaphragm. Very common, usually harmless, and only treated if it causes reflux."],
+    [/bronchiectasis/i, "Bronchiectasis", "Some airways are permanently widened, usually after past infections. It can explain a long-running cough."],
+    [/thyroid nodule/i, "Thyroid nodule", "A spot on the thyroid, picked up incidentally. Most are benign; an ultrasound is the usual next step."],
+    [/aneurysm/i, "Aortic aneurysm", "A widened section of the aorta. This needs a specific follow-up plan from your doctor — ask when the next scan is due."],
+    [/pulmonary embol|filling defect/i, "Possible clot", "Your report mentions language used for a blood clot in the lung. If you have not already spoken to a doctor about this result, do that today."]
+  ];
+  others.forEach(([re, title, body]) => {
+    const hit = sents.find(s => re.test(s) && !/\bno\s+\w*\s*$/i.test(s));
+    if (!hit) return;
+    if (/\bno (evidence of )?(pleural effusion|lymphadenopathy|emphysema|pulmonary embol)/i.test(hit)) return;
+    const sev = /aneurysm|embol/i.test(title + hit) ? "urgent" : "routine";
+    findings.push({ severity: sev, title, facts: [], body, quote: hit.trim(), guide: "", secondRead: false });
+  });
+
+  const tier = findings.reduce((acc, f) => RANK[f.severity] > RANK[acc] ? f.severity : acc, "routine");
+  secondRead = secondRead || findings.some(f => f.secondRead);
+  return { findings, tier, secondRead };
+}
+
+/* ---------- questions to ask ---------- */
+function questions(result){
+  const q = [];
+  const nod = result.findings.find(f => /nodule/i.test(f.title));
+  const cac = result.findings.find(f => /calcium/i.test(f.title));
+  if (nod && !/No lung nodules/i.test(nod.title)){
+    q.push("Exactly what date should my follow-up scan be, and who books it — you or me?");
+    q.push("Do I count as high-risk or low-risk, and did that change what you recommended?");
+    q.push("Was this scan compared against any older imaging of mine?");
+  }
+  if (cac) q.push("Given the coronary calcium on this scan, should we recalculate my heart risk and talk about a statin?");
+  q.push("If this finding turns out to be nothing, when do I stop scanning?");
+  return q;
+}
+
+
+/* ---------- rendering ("Three simple steps" layout) ---------- */
+const VERDICT = {
+  routine: "Based on what the report says, this reads as routine. Still take it to your doctor.",
+  notable: "Something here should be watched or re-checked. That is a schedule, not a diagnosis. The most important thing now is booking the follow-up.",
+  urgent: "Your report uses wording that usually leads to a prompt check-up. That is not a cancer diagnosis, but call the doctor who ordered the scan this week."
+};
+const BADGE = { routine:"Routine", notable:"Follow up", urgent:"Act soon" };
+
+function organFor(title){
+  if (/calcium|aneurysm/i.test(title)) return "i-heart";
+  if (/hernia/i.test(title)) return "i-stomach";
+  if (/lung|nodule|emphysema|effusion|bronchiect|clot|rads/i.test(title)) return "i-lungs";
+  return "i-body";
+}
+function firstSentence(s){
+  const m = s.match(/^.*?[.!?](?=\s|$)/);
+  return m ? m[0] : s;
+}
+function shortLine(f){
+  if (/calcium/i.test(f.title)) return "Calcium in the heart arteries. Ask your doctor about heart risk and a statin.";
+  if (/^lung nodule/i.test(f.title)){
+    const size = (f.facts.find(([k]) => k === "Size") || [])[1];
+    if (/calcified nodule/i.test(f.body)) return "An old, healed spot. Usually no follow-up is needed.";
+    if (f.severity === "urgent") return "A spot that needs a prompt check. Call your doctor this week.";
+    const when = f.guide.match(/CT at (\d+(?:[–-]\d+)?) months/);
+    const what = `A ${size || "small"} spot`;
+    if (f.severity === "routine") return `${what} that is usually harmless. Often no repeat scan is needed.`;
+    return `${what} that doctors usually watch. ${when ? `Book a repeat scan in ${when[1].replace(/[–-]/, "\u2060–\u2060")} months.` : "Ask when your repeat scan is due."}`;
+  }
+  return firstSentence(f.body);
+}
+
+function render(result, isExample){
+  const parts = [];
+  const n = { routine:0, notable:0, urgent:0 };
+  result.findings.forEach(f => n[f.severity]++);
+
+  parts.push(`<div class="card">
+    <div class="result-head"><h2>What your report says</h2>${isExample ? '<span class="example-tag">Sample report</span>' : ''}</div>`);
+  if (!result.findings.length){
+    parts.push(`<p class="verdict">ScanGuide did not find the words it looks for. Paste the full Findings and Impression parts of a chest CT report, or try the sample report.</p></div>`);
+  } else {
+    const plural = (k, w) => `${k} ${w}${k === 1 ? "" : "s"}`;
+    parts.push(`<p class="tally">
+        ${n.urgent ? `<span class="t-act"><i aria-hidden="true"></i>${plural(n.urgent, "finding")} to act on soon</span>` : ""}
+        ${n.notable ? `<span class="t-watch"><i aria-hidden="true"></i>${plural(n.notable, "finding")} to follow up</span>` : ""}
+        ${n.routine ? `<span class="t-ok"><i aria-hidden="true"></i>${n.routine} routine</span>` : ""}
+      </p>
+      <p class="verdict">${VERDICT[result.tier]}</p>
+      <div class="findings">${result.findings.map(f => `
+        <article class="finding s-${f.severity}">
+          <svg class="organ" aria-hidden="true"><use href="#${organFor(f.title)}"/></svg>
+          <h3>${esc(f.title)}</h3>
+          <span class="badge b-${f.severity}">${BADGE[f.severity]}</span>
+          <p class="short">${esc(shortLine(f))}</p>
+          <details>
+            <summary>More about this</summary>
+            ${f.facts.length ? `<div class="facts">${f.facts.map(([k,v]) => `<span>${esc(k)}: <b>${esc(String(v))}</b></span>`).join("")}</div>` : ""}
+            <p>${esc(f.body)}</p>
+            ${f.quote ? `<p class="quote mono">${esc(f.quote)}</p>` : ""}
+            ${f.guide ? `<p>${esc(f.guide)}</p>` : ""}
+          </details>
+        </article>`).join("")}
+      </div></div>`);
+  }
+
+  parts.push(`<div class="card remind">
+      <svg class="cal" viewBox="0 0 96 96" aria-hidden="true">
+        <rect x="8" y="16" width="80" height="72" rx="10" fill="#fff" stroke="#8C9BAD" stroke-width="3"/>
+        <path d="M8 26c0-6 4-10 10-10h60c6 0 10 4 10 10v8H8z" fill="#173A63"/>
+        <rect x="26" y="8" width="7" height="18" rx="3" fill="#8C9BAD"/><rect x="63" y="8" width="7" height="18" rx="3" fill="#8C9BAD"/>
+        <g fill="#C9BBA6"><circle cx="24" cy="48" r="4"/><circle cx="40" cy="48" r="4"/><circle cx="56" cy="48" r="4"/><circle cx="72" cy="48" r="4"/><circle cx="24" cy="64" r="4"/><circle cx="40" cy="64" r="4"/><circle cx="72" cy="64" r="4"/><circle cx="24" cy="78" r="4"/><circle cx="40" cy="78" r="4"/></g>
+        <circle cx="58" cy="68" r="12" fill="#F2A93B"/>
+        <path d="M52 68l4 4 8-8" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <h2>Don't let the follow-up slip</h2>
+      <p>We'll remind you when your repeat scan is due, so you can stay on track.</p>
+      <div class="form">
+        <label class="sr-only" for="remindEmail">Email for your reminder</label>
+        <input type="email" id="remindEmail" placeholder="you@example.com" autocomplete="email" value="${session ? esc(session.email) : ""}">
+        <button class="btn btn-primary" type="button" id="remindBtn">Remind me</button>
+      </div>
+      <p class="confirm hidden" id="remindOk" role="status">Reminder set. In the live version this would be confirmed by email.</p>
+      ${session
+        ? `<p class="note">Signed in as ${esc(session.email)}. This report is saved so your next scan can be compared with it.</p>`
+        : `<div class="signin-prompt"><p>Sign in to keep this report and compare it with your next scan.</p>
+             <button class="gsi" type="button" id="signinInline">${googleG}Sign in with Google</button></div>`}
+    </div>`);
+
+  if (result.secondRead){
+    parts.push(`<div class="card offer">
+        <h2>Want an expert second look?</h2>
+        <p>A chest imaging specialist can re-read your existing images, usually within three business days. No new scan and no extra radiation.</p>
+        <p><span class="price">From $195</span></p>
+        <button class="btn btn-quiet" type="button" id="reader">Request a second read</button>
+      </div>`);
+  }
+
+  el("results").innerHTML = parts.join("");
+  renderAsks(result);
+
+  const rb = el("remindBtn");
+  if (rb) rb.addEventListener("click", () => {
+    const v = el("remindEmail").value.trim();
+    if (!/^\S+@\S+\.\S+$/.test(v)){ el("remindEmail").focus(); return; }
+    el("remindOk").classList.remove("hidden");
+  });
+  const si = el("signinInline");
+  if (si) si.addEventListener("click", signIn);
+  const rd = el("reader");
+  if (rd) rd.addEventListener("click", () => {
+    rd.textContent = "Prototype: the second-read service isn't live yet";
+    rd.disabled = true;
+  });
+}
+
+function renderAsks(result){
+  const qs = result && result.findings.length ? questions(result) : [
+    "What does this finding mean for me?",
+    "Do I need another scan, and when?",
+    "What should I do next?"
+  ];
+  el("asks").innerHTML = `
+    <h2 id="asks-h">Questions to ask your doctor</h2>
+    <ul class="asks">${qs.map((q, i) => `<li><label><input type="checkbox" id="ask${i}"><span>${esc(q)}</span></label></li>`).join("")}</ul>
+    <svg class="doc-ill" viewBox="0 0 140 150" aria-hidden="true"><use href="#i-doctor"/></svg>
+    <p class="asks-note">Tick each one off at your appointment.</p>`;
+}
+
+/* ---------- accounts ----------
+   Prototype sign-in. Google Identity Services cannot load inside a published
+   artifact (its script host is blocked), so this simulates the Google flow and
+   keeps the session in this browser only. See google-sign-in/ for the real
+   drop-in implementation to use on your own domain. */
+const STORE = "scanguide.session.v1";
+let session = null;
+
+function readStore(){
+  try { return JSON.parse(localStorage.getItem(STORE) || "null"); } catch(e){ return null; }
+}
+function writeStore(v){
+  try { v ? localStorage.setItem(STORE, JSON.stringify(v)) : localStorage.removeItem(STORE); } catch(e){}
+}
+const googleG = `<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.6 30.2 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.8 6.1C12.3 13.3 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.6-.15-3.15-.4-4.65H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.6 5.9C44.2 38.1 46.98 31.9 46.98 24.55z"/><path fill="#FBBC05" d="M10.4 28.7c-.5-1.5-.8-3.1-.8-4.7s.3-3.2.8-4.7l-7.8-6.1C.9 16.5 0 20.1 0 24s.9 7.5 2.6 10.8l7.8-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.8 2.3-8.3 2.3-6.3 0-11.7-3.8-13.6-9.3l-7.8 6.1C6.5 42.6 14.6 48 24 48z"/></svg>`;
+
+function renderAuth(){
+  const box = el("authArea");
+  if (!session){
+    box.innerHTML = `<button class="gsi" type="button" id="signin">${googleG}Sign in with Google</button>`;
+    el("signin").addEventListener("click", signIn);
+    return;
+  }
+  box.innerHTML = `
+    <button class="account" type="button" id="acct" aria-haspopup="true" aria-expanded="false">
+      <span class="avatar" aria-hidden="true">${esc(session.name[0])}</span>${esc(session.name.split(" ")[0])}
+    </button>`;
+  el("acct").addEventListener("click", toggleMenu);
+}
+function toggleMenu(){
+  const open = document.querySelector(".menu");
+  if (open){ open.remove(); el("acct").setAttribute("aria-expanded","false"); return; }
+  const m = document.createElement("div");
+  m.className = "menu";
+  m.innerHTML = `
+    <div class="who">${esc(session.name)}<br><span class="em">${esc(session.email)}</span></div>
+    <button type="button" id="mySaved">My saved scans (${savedScans().length})</button>
+    <button type="button" id="signout">Sign out</button>`;
+  el("authArea").appendChild(m);
+  el("acct").setAttribute("aria-expanded","true");
+  el("signout").addEventListener("click", () => { session = null; writeStore(null); m.remove(); renderAuth(); rerender(); });
+  el("mySaved").addEventListener("click", () => { m.remove(); showSaved(); });
+}
+function signIn(){
+  // Stands in for the Google account chooser. Real flow returns an ID token.
+  session = { name:"Sam Whitaker", email:"sam.whitaker@gmail.com", demo:true };
+  writeStore(session);
+  renderAuth();
+  rerender();
+}
+function savedScans(){
+  try { return JSON.parse(localStorage.getItem("scanguide.scans.v1") || "[]"); } catch(e){ return []; }
+}
+function saveScan(entry){
+  try {
+    const all = savedScans();
+    all.unshift(entry);
+    localStorage.setItem("scanguide.scans.v1", JSON.stringify(all.slice(0,12)));
+  } catch(e){}
+}
+function showSaved(){
+  const all = savedScans();
+  const box = el("results");
+  const html = `<div class="panel">
+      <h2>Your saved scans</h2>
+      ${all.length ? `<ul class="saved-list">${all.map(s =>
+        `<li><span>${esc(s.title)}</span><span class="when">${esc(s.date)}</span></li>`).join("")}</ul>`
+        : `<p>Nothing saved yet. Explain a report and it will be kept here so you can compare it against your next scan.</p>`}
+      <div class="controls"><button class="btn-quiet" type="button" id="backToResult">Back to my report</button></div>
+    </div>`;
+  box.innerHTML = html;
+  el("backToResult").addEventListener("click", rerender);
+}
+
+/* ---------- boot ---------- */
+session = readStore();
+renderAuth();
+document.addEventListener("click", (e) => {
+  const m = document.querySelector(".menu");
+  if (m && !m.contains(e.target) && e.target.closest("#acct") === null) {
+    m.remove();
+    const a = el("acct"); if (a) a.setAttribute("aria-expanded","false");
+  }
+});
+
+function rerender(){
+  const text = el("report").value.trim();
+  if (!text){ el("results").innerHTML = ""; renderAsks(null); return; }
+  render(analyze(text), text === SAMPLE);
+}
+
+el("report").value = SAMPLE;
+render(analyze(SAMPLE), true);
+
+el("explain").addEventListener("click", () => {
+  const text = el("report").value.trim();
+  if (!text){ el("report").focus(); return; }
+  const result = analyze(text);
+  render(result, text === SAMPLE);
+  if (session && text !== SAMPLE){
+    const lead = result.findings[0];
+    saveScan({
+      title: lead ? lead.title : "Chest CT report",
+      date: new Date().toLocaleDateString(undefined, { year:"numeric", month:"short", day:"numeric" })
+    });
+  }
+  el("results").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+el("loadSample").addEventListener("click", () => {
+  el("report").value = SAMPLE;
+  render(analyze(SAMPLE), true);
+});
+el("clear").addEventListener("click", () => {
+  el("report").value = "";
+  el("report").focus();
+  el("results").innerHTML = "";
+  renderAsks(null);
+});
+</script>
+</body>
+</html>
